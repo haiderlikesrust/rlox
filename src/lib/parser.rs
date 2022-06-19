@@ -75,7 +75,7 @@ impl Parser {
 
     fn equality(&mut self) -> Expr {
         let mut expr = self.comparison();
-        while self.match_next(&[TokenType::BangEqual, TokenType::BangEqual]) {
+        while self.match_next(&[TokenType::BangEqual, TokenType::EqualEqual]) {
             let op = self.previous();
             let right = self.comparison();
             expr = Expr::Binary(Box::new(BinaryExpr {

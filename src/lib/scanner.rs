@@ -92,8 +92,8 @@ impl Scanner {
                 false => self.add_token(TokenType::Less),
             },
             '>' => match self.check_match('=') {
-                true => self.add_token(TokenType::Greater),
-                false => self.add_token(TokenType::GreaterEqual),
+                true => self.add_token(TokenType::GreaterEqual),
+                false => self.add_token(TokenType::Greater),
             },
             '/' => match self.check_match('/') {
                 true => {
