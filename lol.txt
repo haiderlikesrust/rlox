@@ -1,0 +1,85 @@
+[
+    Token {
+        tty: Number,
+        lexeme: "2",
+        literal: Some(
+            "2",
+        ),
+        line: 1,
+    },
+    Token {
+        tty: Plus,
+        lexeme: "+",
+        literal: None,
+        line: 1,
+    },
+    Token {
+        tty: Number,
+        lexeme: "1",
+        literal: Some(
+            "1",
+        ),
+        line: 1,
+    },
+    Token {
+        tty: EqualEqual,
+        lexeme: "==",
+        literal: None,
+        line: 1,
+    },
+    Token {
+        tty: Number,
+        lexeme: "3",
+        literal: Some(
+            "3",
+        ),
+        line: 1,
+    },
+    Token {
+        tty: Eof,
+        lexeme: "",
+        literal: None,
+        line: 1,
+    },
+]
+Binary(
+    BinaryExpr {
+        left: Binary(
+            BinaryExpr {
+                left: Literal(
+                    LiteralExpr {
+                        value: Some(
+                            "2",
+                        ),
+                    },
+                ),
+                operator: Token {
+                    tty: Plus,
+                    lexeme: "+",
+                    literal: None,
+                    line: 1,
+                },
+                right: Literal(
+                    LiteralExpr {
+                        value: Some(
+                            "1",
+                        ),
+                    },
+                ),
+            },
+        ),
+        operator: Token {
+            tty: EqualEqual,
+            lexeme: "==",
+            literal: None,
+            line: 1,
+        },
+        right: Literal(
+            LiteralExpr {
+                value: Some(
+                    "3",
+                ),
+            },
+        ),
+    },
+)

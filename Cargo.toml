@@ -10,3 +10,4 @@ path = "src/lib/mod.rs"
 [dependencies]
 strum = { version = "0.24.1", features = ["derive"] }
 substring = "1.4.5"
+thiserror = "1.0.31"

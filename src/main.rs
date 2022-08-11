@@ -1,11 +1,10 @@
 use rlox::{
-    scanner::Scanner, ast_printer::AstPrinter, parser::Parser
+    scanner::Scanner, parser::Parser, interpreter::Interpreter
 };
 fn main() {
-    let mut s = Scanner::new("2 + 1 == 3");
+    let mut s = Scanner::new("print 1;");
     let _tokens = s.scan_tokens();
-    println!("{:?}", &_tokens);
     let mut parser = Parser::new(_tokens);
     let a = parser.parse();
-    println!("{:#?}", a)
+    let value = Interpreter::new().interpret(a);
 }
