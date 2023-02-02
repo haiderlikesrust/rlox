@@ -2,7 +2,7 @@ use rlox::{
     scanner::Scanner, parser::Parser, interpreter::Interpreter
 };
 fn main() {
-    let mut s = Scanner::new("print 1;");
+    let mut s = Scanner::new("var a;");
     let _tokens = s.scan_tokens();
     let mut parser = Parser::new(_tokens);
     let a = parser.parse();

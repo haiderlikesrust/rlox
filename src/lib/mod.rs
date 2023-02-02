@@ -6,3 +6,4 @@ pub mod parser;
 pub mod ast_printer;
 pub mod interpreter;
 pub mod errors;
+pub mod env;

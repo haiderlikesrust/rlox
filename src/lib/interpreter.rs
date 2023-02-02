@@ -1,9 +1,11 @@
 use crate::{
-    parser::{BinaryExpr, Expr, ExprVisitor, LiteralExpr, StmtExpr, UnaryExpr, Visitor},
-    token_type::TokenType,
+    parser::{BinaryExpr, Expr, ExprVisitor, LiteralExpr, StmtExpr, UnaryExpr, Visitor, VariableExpr},
+    token_type::TokenType, env::Environment,
 };
 #[derive(Clone, Debug)]
-pub struct Interpreter {}
+pub struct Interpreter {
+    environment: Environment,
+}
 impl ExprVisitor<Option<String>> for Interpreter {
     fn visit_binary(&mut self, e: &Expr) -> Option<String> {
         if let Expr::Binary(a) = e {
@@ -123,9 +125,22 @@ impl ExprVisitor<Option<String>> for Interpreter {
         self.evaluate(&e.get_inner());
         None
     }
+
+    fn visit_var(&mut self, e: &VariableExpr) -> Option<String> {
+        let name = e.get_name();
+        let value = self.evaluate(e);
+        self.environment.define(name, value.unwrap_or_else(|| "null".to_string()));
+        None
+    }
+
+    
 }
 
 impl Interpreter {
+    pub fn new() -> Self {
+        let env = Environment::new();
+        Self { environment: env }
+    }
     pub fn evaluate(&mut self, expr: &impl Visitor<Option<String>>) -> Option<String> {
         expr.accept(self)
     }
@@ -156,7 +171,5 @@ impl Interpreter {
         stmt_expr.accept(self);
     }
 
-    pub fn new() -> Self {
-        Interpreter {}
-    }
+
 }

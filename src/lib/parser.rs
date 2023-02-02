@@ -8,6 +8,7 @@ pub trait ExprVisitor<T> {
     fn visit_unary(&mut self, e: &Expr) -> T;
     fn visit_print(&mut self, e: &StmtExpr) -> T;
     fn visit_expression(&mut self, e: &StmtExpr) -> T;
+    fn visit_var(&mut self, e: &VariableExpr) -> T;
 }
 
 pub trait Visitor<T> {
@@ -21,11 +22,20 @@ pub enum Expr {
     Literal(LiteralExpr),
     Unary(Box<UnaryExpr>),
     Stmt(Box<StmtExpr>),
+    Variable(Box<VariableExpr>)
 }
 #[derive(Debug, Display, Clone)]
 pub enum StmtExpr {
-    Expression {  expression: Expr },
-    Print { expression: Expr },
+    Expression {
+        expression: Expr,
+    },
+    Print {
+        expression: Expr,
+    },
+    Var {
+        name: Token,
+        initializer: Option<Expr>,
+    },
 }
 
 impl StmtExpr {
@@ -33,6 +43,11 @@ impl StmtExpr {
         match self {
             StmtExpr::Expression { expression } => expression.clone(),
             StmtExpr::Print { expression } => expression.clone(),
+            StmtExpr::Var { initializer, .. } => initializer.clone().unwrap_or_else(|| {
+                Expr::Literal(LiteralExpr {
+                    value: Some("null".to_string()),
+                })
+            }),
         }
     }
 }
@@ -40,6 +55,7 @@ impl StmtExpr {
 impl Visitor<Option<String>> for Expr {
     fn accept(&self, e: &mut dyn ExprVisitor<Option<String>>) -> Option<String> {
         match self {
+
             Expr::Binary(_) => e.visit_binary(self),
             Expr::Grouping(_) => e.visit_grouping(self),
             Expr::Literal(_) => e.visit_literal(self),
@@ -49,9 +65,22 @@ impl Visitor<Option<String>> for Expr {
                 match &s {
                     StmtExpr::Expression { .. } => e.visit_expression(&s),
                     StmtExpr::Print { .. } => e.visit_print(&s),
+                    StmtExpr::Var { .. } => e.visit_expression(&s),
                 }
-            }
+            },
+            Expr::Variable(_) => e.visit_literal(self)
         }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct VariableExpr {
+    pub name: Token,
+}
+
+impl VariableExpr {
+    pub fn get_name(&self) -> String {
+        self.name.lexeme.clone()
     }
 }
 
@@ -91,7 +120,14 @@ impl Visitor<Option<String>> for StmtExpr {
         return match self {
             StmtExpr::Expression { .. } => e.visit_expression(self),
             StmtExpr::Print { .. } => e.visit_print(self),
+            StmtExpr::Var { .. } => e.visit_expression(self),
         };
+    }
+}
+
+impl Visitor<Option<String>> for VariableExpr {
+    fn accept(&self, e: &mut dyn ExprVisitor<Option<String>>) -> Option<String> {
+        e.visit_literal(&Expr::Variable(Box::new(self.clone())))
     }
 }
 
@@ -251,6 +287,11 @@ impl Parser {
                 value: Some("true".to_string()),
             }));
         }
+        if self.match_next(&[TokenType::Indentifier]) {
+            return Some(Expr::Variable(Box::new(VariableExpr {
+                name: self.previous(),
+            })));
+        }
         if self.match_next(&[TokenType::Nil]) {
             return Some(Expr::Literal(LiteralExpr {
                 value: Some("null".to_string()),
@@ -289,6 +330,24 @@ impl Parser {
         self.expression_statement()
     }
 
+    fn declaration(&mut self) -> StmtExpr {
+        if self.match_next(&[TokenType::Var]) {
+            return self.var_declaration();
+        }
+        self.statement()
+    }
+    fn var_declaration(&mut self) -> StmtExpr {
+        let name = self.consume(TokenType::Indentifier, "Expect variable name");
+        let mut initializer = None;
+        if self.match_next(&[TokenType::Equal]) {
+            initializer = Some(self.expression());
+        }
+        self.consume(
+            TokenType::Semicolon,
+            "Expect ';' after variable declaration",
+        );
+        StmtExpr::Var { name, initializer }
+    }
     fn consume(&mut self, tty: TokenType, message: &str) -> Token {
         if self.check(tty) {
             return self.advance();
@@ -299,10 +358,12 @@ impl Parser {
     pub fn parse(&mut self) -> Vec<StmtExpr> {
         let mut statements = Vec::new();
         while !self.is_at_end() {
-            statements.push(self.statement());
+            statements.push(self.declaration());
         }
+        println!("{:#?}", statements);
         statements
         // self.expression()
+        
     }
 
     pub fn synchronize(&mut self) {

@@ -49,6 +49,10 @@ impl ExprVisitor<Option<String>> for AstPrinter {
     fn visit_expression(&mut self, e: &StmtExpr) -> Option<String> {
         None
     }
+
+    fn visit_var(&mut self, e: &crate::parser::VariableExpr) -> Option<String> {
+        None
+    }
 }
 
 // impl Visitor<Option<String>> for AstPrinter {
@@ -74,6 +78,7 @@ pub fn ac(e: &Expr) -> String {
                     ac(&Expr::Grouping(a));
                 },
                 Expr::Stmt(_) => todo!(), 
+                Expr::Variable(_) => todo!("Variable"),
                 
             }
 
@@ -92,6 +97,7 @@ pub fn ac(e: &Expr) -> String {
                     ac(&Expr::Grouping(a));
                 },
                 Expr::Stmt(_) => todo!(), 
+                Expr::Variable(_) => todo!("Variable"),
                 
             }
 
@@ -121,6 +127,7 @@ impl AstPrinter {
             Expr::Literal(e) => e.accept(self),
             Expr::Unary(e) => e.accept(self),
             Expr::Stmt(e) => e.accept(self),
+            Expr::Variable(e) => e.accept(self),
         }
     }
     fn parenthesize(&mut self, name: &str, exprs: &[Expr]) -> String {
